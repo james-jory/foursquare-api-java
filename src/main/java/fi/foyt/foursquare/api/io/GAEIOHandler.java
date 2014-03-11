@@ -29,11 +29,8 @@ public class GAEIOHandler extends IOHandler {
 			URL aUrl = new URL(url);
 
 			HTTPMethod httpMethod = HTTPMethod.GET;
-			switch (method) {
-			case POST:
+			if (method == Method.POST)
 				httpMethod = HTTPMethod.POST;
-				break;
-			}
 
 			HTTPRequest httpRequest = new HTTPRequest(aUrl, httpMethod,
 					doNotValidateCertificate().setDeadline(10d));

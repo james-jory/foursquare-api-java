@@ -162,17 +162,22 @@
 	</reporting>
 
 	<issueManagement>
-		<url>https://code.google.com/p/foursquare-api-java/issues/</url>
-		<system>Google Code</system>
+		<url>https://github.com/james-jory/foursquare-api-java/issues</url>
+		<system>Github Issues</system>
 	</issueManagement>
 	<scm>
-		<url>http://foursquare-api-java.googlecode.com/svn/</url>
-		<developerConnection>scm:svn:https://foursquare-api-java.googlecode.com/svn/trunk</developerConnection>
+		<url>https://github.com/james-jory/foursquare-api-java</url>
+		<connection>scm:git:git://github.com/james-jory/foursquare-api-java.git</connection>
+		<developerConnection>scm:git:git@github.com:james-jory/foursquare-api-java</developerConnection>
 	</scm>
-	<organization>
-		<name>Foyt</name>
-		<url>http://www.foyt.fi</url>
-	</organization>
-	<url>http://foursquare-api-java.googlecode.com/</url>
+	<developers>
+		<developer>
+			<name>James Jory</name>
+			<url>https://github.com/james-jory</url>
+			<id>james-jory</id>
+		</developer>
+	</developers>
+	
+	<url>https://github.com/james-jory/foursquare-api-java</url>
 	<description>Foursquare V2 API for Java</description>
 </project>

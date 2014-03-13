@@ -593,18 +593,37 @@ public class FoursquareApi {
    * @throws FoursquareApiException when something unexpected happens
    */
   public Result<CompleteVenue> venue(String venueId) throws FoursquareApiException {
-    try {
-      ApiRequestResponse response = doApiRequest(Method.GET, "venues/" + venueId, isAuthenticated());
-      CompleteVenue result = null;
+    return venue(venueId, null);
+  }
+  
+  /**
+   * Gives details about a venue, including location, mayorship, tags, tips, specials, and category. 
+   * 
+   * @see <a href="https://developer.foursquare.com/docs/venues/venues.html" target="_blank">https://developer.foursquare.com/docs/venues/venues.html</a>
+   * 
+   * @param venueId id of venue to retrieve
+   * @param ll latitude and longitude of the location in question, so response can include distance.
+   * @return CompleteVenue entity wrapped in Result object
+   * @throws FoursquareApiException when something unexpected happens
+   */
+  public Result<CompleteVenue> venue(String venueId, String ll) throws FoursquareApiException {
+	  try {
+		  StringBuilder url = new StringBuilder("venues/" + venueId);
+		  if(ll != null) {
+			  url.append("?ll=").append(ll);
+		  }
+		  
+	      ApiRequestResponse response = doApiRequest(Method.GET, url.toString(), isAuthenticated());
+	      CompleteVenue result = null;
 
-      if (response.getMeta().getCode() == 200) {
-        result = (CompleteVenue) JSONFieldParser.parseEntity(CompleteVenue.class, response.getResponse().getJSONObject("venue"), this.skipNonExistingFields);
-      }
+	      if (response.getMeta().getCode() == 200) {
+	        result = (CompleteVenue) JSONFieldParser.parseEntity(CompleteVenue.class, response.getResponse().getJSONObject("venue"), this.skipNonExistingFields);
+	      }
 
-      return new Result<CompleteVenue>(response.getMeta(), result);
-    } catch (JSONException e) {
-      throw new FoursquareApiException(e);
-    }
+	      return new Result<CompleteVenue>(response.getMeta(), result);
+	    } catch (JSONException e) {
+	      throw new FoursquareApiException(e);
+	    } 
   }
   
   /**

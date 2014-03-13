@@ -608,12 +608,12 @@ public class FoursquareApi {
    */
   public Result<CompleteVenue> venue(String venueId, String ll) throws FoursquareApiException {
 	  try {
-		  StringBuilder url = new StringBuilder("venues/" + venueId);
+		  ApiRequestResponse response = null;
 		  if(ll != null) {
-			  url.append("?ll=").append(ll);
+		      response = doApiRequest(Method.GET, "venues/" + venueId, isAuthenticated(), "ll", ll);
+		  } else {
+			  response = doApiRequest(Method.GET, "venues/" + venueId, isAuthenticated());
 		  }
-		  
-	      ApiRequestResponse response = doApiRequest(Method.GET, url.toString(), isAuthenticated());
 	      CompleteVenue result = null;
 
 	      if (response.getMeta().getCode() == 200) {

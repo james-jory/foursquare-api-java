@@ -27,101 +27,167 @@ import java.net.URL;
  * 
  */
 public class DefaultIOHandler extends IOHandler {
+	private int connectTimeout = 15000;
+	private int readTimeout = 15000;
+	private boolean allowUserInteraction = false;
 
-  @Override
-  public Response fetchData(String url, Method method) {
-    int code = 200;
+	/**
+	 * Timeout in milliseconds to wait for connection.
+	 * @return
+	 */
+	public int getConnectTimeout() {
+		return connectTimeout;
+	}
 
-    try {
-      URL aUrl = new URL(url);
-      HttpURLConnection connection = (HttpURLConnection) aUrl.openConnection();
-      try {
-        connection.setDoInput(true);
-        if("POST".equals(method.name())) {
-            connection.setDoOutput(true);
-        }
-        connection.setRequestMethod(method.name());
-        connection.connect();
+	/**
+	 * Set connect timeout (in milliseconds).
+	 */
+	public void setConnectTimeout(int connectTimeout) {
+		this.connectTimeout = connectTimeout;
+	}
 
-        code = connection.getResponseCode();
-        if (code == 200) {
-          InputStream inputStream = connection.getInputStream();
-          return new Response(readStream(inputStream), code, connection.getResponseMessage());
-        } else {
-          return new Response("", code, getMessageByCode(code));
-        }
+	/**
+	 * Timeout in milliseconds to wait for data on a connection.
+	 * @return
+	 */
+	public int getReadTimeout() {
+		return readTimeout;
+	}
 
-      } finally {
-        connection.disconnect();
-      }
-    } catch (MalformedURLException e) {
-      return new Response("", 400, "Malformed URL: " + url);
-    } catch (IOException e) {
-      return new Response("", 500, e.getMessage());
-    }
-  }
+	/**
+	 * Set read timeout (in milliseconds).
+	 * @param readTimeout
+	 */
+	public void setReadTimeout(int readTimeout) {
+		this.readTimeout = readTimeout;
+	}
 
-  @Override
-  public Response fetchDataMultipartMime(String url, MultipartParameter... parameters) {
-    int code = 200;
+	/**
+	 * Should user interaction based be supported for HTTP connections.
+	 * @return
+	 */
+	public boolean isAllowUserInteraction() {
+		return allowUserInteraction;
+	}
 
-    try {
-      URL aUrl = new URL(url);
-      HttpURLConnection connection = (HttpURLConnection) aUrl.openConnection();
-      try {
-        connection.setDoInput(true);
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
-        connection.connect();
+	public void setAllowUserInteraction(boolean allowUserInteraction) {
+		this.allowUserInteraction = allowUserInteraction;
+	}
 
-        OutputStream outputStream = connection.getOutputStream();
+	@Override
+	public Response fetchData(String url, Method method) {
+		int code = 200;
+
+		try {
+			URL aUrl = new URL(url);
+			HttpURLConnection connection = (HttpURLConnection)aUrl.openConnection();
+			
+			try {
+				if (connectTimeout > 0)
+					connection.setConnectTimeout(connectTimeout);
+				if (readTimeout > 0)
+					connection.setReadTimeout(readTimeout);
+				
+				connection.setAllowUserInteraction(allowUserInteraction);     	  
+				connection.setDoInput(true);
+				if ("POST".equals(method.name())) 
+					connection.setDoOutput(true);
+				connection.setRequestMethod(method.name());
+				connection.connect();
+
+				code = connection.getResponseCode();
+				if (code == 200) {
+					InputStream inputStream = connection.getInputStream();
+					return new Response(readStream(inputStream), code, connection.getResponseMessage());
+				}
+
+				return new Response("", code, getMessageByCode(code));
+			} 
+			finally {
+				connection.disconnect();
+			}
+		} 
+		catch (MalformedURLException e) {
+			return new Response("", 400, "Malformed URL: " + url);
+		} 
+		catch (IOException e) {
+			return new Response("", 500, e.getMessage());
+		}
+	}
+
+	@Override
+	public Response fetchDataMultipartMime(String url, MultipartParameter... parameters) {
+		int code = 200;
+
+		try {
+			URL aUrl = new URL(url);
+			HttpURLConnection connection = (HttpURLConnection) aUrl.openConnection();
+			
+			try {
+				if (connectTimeout > 0)
+					connection.setConnectTimeout(connectTimeout);
+				if (readTimeout > 0)
+					connection.setReadTimeout(readTimeout);
+				
+				connection.setAllowUserInteraction(allowUserInteraction);     	  
+				connection.setDoInput(true);
+				connection.setDoOutput(true);
+				connection.setRequestMethod("POST");
+				connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
+				connection.connect();
+
+				OutputStream outputStream = connection.getOutputStream();
         
-        StringBuffer startBoundaryBuilder = new StringBuffer("--")
-          .append(BOUNDARY)
-          .append("\r\n");
+				StringBuilder startBoundaryBuilder = new StringBuilder();
+				startBoundaryBuilder.append("--").append(BOUNDARY).append("\r\n");
         
-        outputStream.write(startBoundaryBuilder.toString().getBytes());
+				outputStream.write(startBoundaryBuilder.toString().getBytes());
         
-        for (MultipartParameter parameter : parameters) {
-          StringBuffer formDataBuilder = new StringBuffer()
-            .append("Content-Disposition: form-data; name=\"")
-            .append(parameter.getName())
-            .append("\"; filename=\"")
-            .append(parameter.getName())
-            .append("\"\r\n")
-            .append("Content-Type: ")
-            .append(parameter.getContentType())
-            .append("\r\n\r\n");
-          outputStream.write(formDataBuilder.toString().getBytes());
-          outputStream.write(parameter.getContent());
-        }
+				for (MultipartParameter parameter : parameters) {
+					StringBuilder formDataBuilder = new StringBuilder()
+							.append("Content-Disposition: form-data; name=\"")
+							.append(parameter.getName())
+							.append("\"; filename=\"")
+							.append(parameter.getName())
+							.append("\"\r\n")
+							.append("Content-Type: ")
+							.append(parameter.getContentType())
+							.append("\r\n\r\n");
+					
+					outputStream.write(formDataBuilder.toString().getBytes());
+					outputStream.write(parameter.getContent());
+				}
         
-        StringBuilder endBoundaryBuilder = new StringBuilder("\r\n--")
-          .append(BOUNDARY)
-          .append("--\r\n");
-        outputStream.write(endBoundaryBuilder.toString().getBytes());
+				StringBuilder endBoundaryBuilder = new StringBuilder()
+						.append("\r\n--")
+						.append(BOUNDARY)
+						.append("--\r\n");
+				
+				outputStream.write(endBoundaryBuilder.toString().getBytes());
 
-        outputStream.flush();
-        outputStream.close();
+				outputStream.flush();
+				outputStream.close();
 
-        code = connection.getResponseCode();
-        if (code == 200) {
-          InputStream inputStream = connection.getInputStream();
-          return new Response(readStream(inputStream), code, connection.getResponseMessage());
-        } else {
-          return new Response("", code, getMessageByCode(code));
-        }
+				code = connection.getResponseCode();
+				if (code == 200) {
+					InputStream inputStream = connection.getInputStream();
+					return new Response(readStream(inputStream), code, connection.getResponseMessage());
+				}
 
-      } finally {
-        connection.disconnect();
-      }
-    } catch (MalformedURLException e) {
-      return new Response("", 400, "Malformed URL: " + url);
-    } catch (IOException e) {
-      return new Response("", 500, e.getMessage());
-    }
-  }
+				return new Response("", code, getMessageByCode(code));
+
+			} 
+			finally {
+				connection.disconnect();
+			}
+		} 
+		catch (MalformedURLException e) {
+			return new Response("", 400, "Malformed URL: " + url);
+		} 
+		catch (IOException e) {
+			return new Response("", 500, e.getMessage());
+		}
+	}
 
   /**
    * Reads input stream and returns it's contents as String

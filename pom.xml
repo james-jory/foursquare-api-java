@@ -3,7 +3,7 @@
 	<groupId>fi.foyt</groupId>
 	<artifactId>foursquare-api</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.4-VinTank</version>
+	<version>1.0.5-VinTank</version>
 	<name>Foursquare API</name>
 	<licenses>
 		<license>
@@ -44,13 +44,6 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-
-	<distributionManagement>
-		<repository>
-			<id>foursquareapijava</id>
-			<url>svn:https://foursquare-api-java.googlecode.com/svn/repository</url>
-		</repository>
-	</distributionManagement>
 
 	<build>
 		<plugins>

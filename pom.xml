@@ -3,7 +3,7 @@
 	<groupId>fi.foyt</groupId>
 	<artifactId>foursquare-api</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.5-VinTank</version>
+	<version>1.0.6-VinTank</version>
 	<name>Foursquare API</name>
 	<licenses>
 		<license>

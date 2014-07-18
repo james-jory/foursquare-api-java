@@ -972,6 +972,27 @@ public class FoursquareApi {
   
   
   /**
+   * Allows the authenticated user to claim a venue. This is a non-public API that requires permission from 
+   * Foursquare for your application's client ID.
+   * 
+   * @see <a href="https://developer.foursquare.com/docs/venues/claim" target="_blank">https://developer.foursquare.com/docs/venues/claim</a>.
+   * 
+   * @param id the venue id for the venue being claimed
+   * @param visible whether authenticated user should be shown as a venue manager on the venue page
+   * @return Result object
+   * @throws FoursquareApiException when something unexpected happens
+   */
+  public Result<Object> venueClaim(String id, boolean visible) throws FoursquareApiException {
+    try {
+      ApiRequestResponse response = doApiRequest(Method.POST, "venues/" + id + "/claim", true, "visible", visible);
+      return new Result<Object>(response.getMeta(), null);
+    } catch (JSONException e) {
+      throw new FoursquareApiException(e);
+    }
+  }
+
+  
+  /**
    * handle parsing a venue search result and parsing the data
    * @param response
    * @return
